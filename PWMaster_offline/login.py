@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QMessageBox, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QStackedWidget, QMainWindow
-from sign_up import SignupPage
+from signup import SignupPage
 import os
 from hash512 import hash_SHA512
 
