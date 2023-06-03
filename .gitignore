@@ -1,3 +1,7 @@
 #trying to ignore db_connect.py changes, but realize can't do that with gitignore
 #just using git update-index --assume-unchanged db_connect.py
 #db_connect.py
+
+#ignore passwords.csv and user_log.txt
+passwords.csv
+user_log.txt
