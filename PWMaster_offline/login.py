@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QMessageBox, QWidget, QLabel, QLineEdit, QPushButton
 from signup import SignupPage
 import os
 from hash512 import hash_SHA512
+from mainpage import mainpage
 
 class login(QMainWindow):
     def __init__(self, parent=None):
@@ -34,11 +35,15 @@ class login(QMainWindow):
         self.signup_page = SignupPage()
         self.signup_page.signup_button.clicked.connect(self.signup)
 
+        self.main_page = mainpage()
+
         self.stacked_widget.addWidget(self.login_page)
         self.stacked_widget.addWidget(self.signup_page)
+        self.stacked_widget.addWidget(self.main_page)
 
         self.setCentralWidget(self.stacked_widget)
 
+        
     def login(self):
         username = self.login_username_input.text()
         password = self.login_password_input.text()
@@ -51,24 +56,18 @@ class login(QMainWindow):
                         continue
                     elif username in line and password in line:
                         QMessageBox.information(self, "Login", "Login successful!")
-                        self.showPasswordManager()
+                        self.showMainPage()
                         return
                 QMessageBox.warning(self, "Login", "Username or password is incorrect.")
-
-        self.showPasswordManager()
 
     def showSignupSection(self):
         self.stacked_widget.setCurrentWidget(self.signup_page)
 
-    def showPasswordManager(self):
-        # Password manager functionality
-        # ...
-        pass
+    def showMainPage(self):
+        self.stacked_widget.setCurrentWidget(self.main_page)
 
     def signup(self):
         # Signup functionality
         # ...
-
-        QMessageBox.information(self, "Sign Up", "Sign up successful!")
         self.stacked_widget.setCurrentWidget(self.login_page)
         self.signup_page
