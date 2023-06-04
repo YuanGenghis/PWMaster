@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QTableView, QWidget
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QTableView, QWidget, QFileDialog, QHeaderView
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import csv
+from password_delegate import PasswordDelegate
 
 class mainpage(QMainWindow):
     def __init__(self):
@@ -15,7 +16,28 @@ class mainpage(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        menu_bar = self.menuBar()
+
+        file_menu = menu_bar.addMenu('&File')
+        file_menu.addAction('&Import Passwords', self.browser_files)
+
         # Load and display passwords
+        self.load_passwords()
+
+    def browser_files(self):
+        f_name = QFileDialog.getOpenFileName(self, 'Open file', r'C:\Users\Genghis\Downloads', 'CSV files (*.csv)')
+        self.add_password(f_name[0])
+
+    def add_password(self, file):
+        with open('passwords.csv', 'a', newline='') as f:
+            writer_object = csv.writer(f)
+            
+            with open(file, "r") as import_file:
+                reader_object = csv.reader(import_file)
+                next(reader_object)
+
+                for row in reader_object:
+                    writer_object.writerow(row)
         self.load_passwords()
 
     def load_passwords(self):
@@ -32,6 +54,19 @@ class mainpage(QMainWindow):
 
         # Set the model for the table view
         self.table_view.setModel(model)
+
+        self.table_view.resizeColumnsToContents()
+
+        header = self.table_view.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Stretch)
+
+        # Set the delegate for the password column
+        self.table_view.setItemDelegateForColumn(3, PasswordDelegate(self))
+
+        self.table_view.resizeColumnsToContents()
+
+        header = self.table_view.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Stretch)
 
     def read_passwords_from_csv(self, file_path):
         passwords = []

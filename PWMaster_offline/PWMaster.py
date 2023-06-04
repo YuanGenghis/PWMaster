@@ -8,6 +8,7 @@ class PasswordManagerApp(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Password Manager")
+        
         self.setGeometry(1000, 800, 1000, 500)
 
         self.login_page = login()
