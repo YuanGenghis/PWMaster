@@ -2,6 +2,14 @@ from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QTableView, QWidget, QFile
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import csv
 from password_delegate import PasswordDelegate
+from aes import encrypt_password, decrypt_password, transfer_string_to_length
+
+with open('user_log.txt', 'r') as f:
+    lines = f.readlines()
+    password_line = lines[1].strip()
+    user_password = password_line.split(",")[1].strip()
+
+aes_key = transfer_string_to_length(user_password, 16)
 
 class mainpage(QMainWindow):
     def __init__(self):
@@ -25,10 +33,10 @@ class mainpage(QMainWindow):
         self.load_passwords()
 
     def browser_files(self):
-        f_name = QFileDialog.getOpenFileName(self, 'Open file', r'C:\Users\Genghis\Downloads', 'CSV files (*.csv)')
-        self.add_password(f_name[0])
+        f_name = QFileDialog.getOpenFileName(self, 'Open file', r'./', 'CSV files (*.csv)')
+        self.add_password_by_import(f_name[0])
 
-    def add_password(self, file):
+    def add_password_by_import(self, file):
         with open('passwords.csv', 'a', newline='') as f:
             writer_object = csv.writer(f)
             
@@ -37,6 +45,7 @@ class mainpage(QMainWindow):
                 next(reader_object)
 
                 for row in reader_object:
+                    row[3] = encrypt_password(row[3], aes_key)
                     writer_object.writerow(row)
         self.load_passwords()
 
@@ -49,6 +58,7 @@ class mainpage(QMainWindow):
 
         # Populate the table with passwords
         for password in passwords:
+            password[3] = decrypt_password(eval(password[3]), aes_key)
             row = [QStandardItem(field) for field in password]
             model.appendRow(row)
 
