@@ -1,23 +1,19 @@
 from hash import Hash
 
 class SHA512(Hash):
-    """SHA384 hashing, see https://en.wikipedia.org/wiki/SHA-2#Pseudocode."""
+    "SHA384 hashing, see https://en.wikipedia.org/wiki/SHA-2#Pseudocode."
 
     def leftshift(self, x, c):
-        """ Left shift the number x by c bytes."""
         return x << c
     
     def rightshift(self, x, c):
-        """ Right shift the number x by c bytes."""
         return x >> c
     
     def leftrotate_64(self, x, c):
-        """ Left rotate the number x by c bytes, for 64-bits numbers."""
         x &= 0xFFFFFFFFFFFFFFFF
         return ((x << c) | (x >> (64 - c))) & 0xFFFFFFFFFFFFFFFF
 
     def rightrotate_64(self, x, c):
-        """ Right rotate the number x by c bytes, for 64-bits numbers."""
         x &= 0xFFFFFFFFFFFFFFFF
         return ((x >> c) | (x << (64 - c))) & 0xFFFFFFFFFFFFFFFF
     
@@ -26,12 +22,7 @@ class SHA512(Hash):
         self.byteorder   = 'big'
         self.block_size  = 128
         self.digest_size = 64
-        # Note 2: For each round, there is one round constant k[i] and one entry in the message schedule array w[i], 0 ≤ i ≤ 79
-        # Note 3: The compression function uses 8 working variables, a through h
-        # Note 4: Big-endian convention is used when expressing the constants in this pseudocode
 
-        # Initialize hash values:
-        # (The second 64 bits of the fractional parts of the square roots of the first 8 primes 2..19)
         h0 = 0x6a09e667f3bcc908
         h1 = 0xbb67ae8584caa73b
         h2 = 0x3c6ef372fe94f82b
@@ -41,8 +32,6 @@ class SHA512(Hash):
         h6 = 0x1f83d9abfb41bd6b
         h7 = 0x5be0cd19137e2179
 
-        # Initialize array of round constants:
-        # (first 64 bits of the fractional parts of the cube roots of the first 80 primes 2..409):
         self.k = [
             0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc, 0x3956c25bf348b538, 
             0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118, 0xd807aa98a3030242, 0x12835b0145706fbe, 
@@ -67,35 +56,23 @@ class SHA512(Hash):
     
     def update(self, arg):
         h0, h1, h2, h3, h4, h5, h6, h7 = self.hash_pieces
-        # 1. Pre-processing, exactly like MD5
         data = bytearray(arg)
         orig_len_in_bits = (8 * len(data)) & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        # 1.a. Add a single '1' bit at the end of the input bits
         data.append(0x80)
-        # 1.b. Padding with zeros as long as the input bits length ≡ 896 (mod 1024)
         while len(data) % 128 != 112:
             data.append(0)
-        # 1.c. append original length in bits mod (2 pow 128) to message
         data += orig_len_in_bits.to_bytes(16, byteorder='big')
         assert len(data) % 128 == 0, "Error in padding"
-        # 2. Computations
-        # Process the message in successive 1024-bit = 128-bytes chunks:
         for offset in range(0, len(data), 128):
-            # 2.a. 1024-bits = 128-bytes chunks
             chunks = data[offset : offset + 128]
             w = [0 for i in range(80)]
-            # 2.b. Break chunk into sixteen 128-bit = 8-bytes words w[i], 0 ≤ i ≤ 15
             for i in range(16):
                 w[i] = int.from_bytes(chunks[8*i : 8*i + 8], byteorder='big')
-            # 2.c.  Extend the first 16 words into the remaining 64
-            #       words w[16..79] of the message schedule array:
             for i in range(16, 80):
                 s0 = (self.rightrotate_64(w[i-15], 1) ^ self.rightrotate_64(w[i-15], 8) ^ self.rightshift(w[i-15], 7)) & 0xFFFFFFFFFFFFFFFF
                 s1 = (self.rightrotate_64(w[i-2], 19) ^ self.rightrotate_64(w[i-2], 61) ^ self.rightshift(w[i-2], 6)) & 0xFFFFFFFFFFFFFFFF
                 w[i] = (w[i-16] + s0 + w[i-7] + s1) & 0xFFFFFFFFFFFFFFFF
-            # 2.d. Initialize hash value for this chunk
             a, b, c, d, e, f, g, h = h0, h1, h2, h3, h4, h5, h6, h7
-            # 2.e. Main loop, cf. https://tools.ietf.org/html/rfc6234
             for i in range(80):
                 S1 = (self.rightrotate_64(e, 14) ^ self.rightrotate_64(e, 18) ^ self.rightrotate_64(e, 41)) & 0xFFFFFFFFFFFFFFFF
                 ch = ((e & f) ^ ((~e) & g)) & 0xFFFFFFFFFFFFFFFF
@@ -106,10 +83,8 @@ class SHA512(Hash):
 
                 new_a = (temp1 + temp2) & 0xFFFFFFFFFFFFFFFF
                 new_e = (d + temp1) & 0xFFFFFFFFFFFFFFFF
-                # Rotate the 8 variables
                 a, b, c, d, e, f, g, h = new_a, a, b, c, new_e, e, f, g
 
-            # Add this chunk's hash to result so far:
             h0 = (h0 + a) & 0xFFFFFFFFFFFFFFFF
             h1 = (h1 + b) & 0xFFFFFFFFFFFFFFFF
             h2 = (h2 + c) & 0xFFFFFFFFFFFFFFFF
@@ -118,7 +93,6 @@ class SHA512(Hash):
             h5 = (h5 + f) & 0xFFFFFFFFFFFFFFFF
             h6 = (h6 + g) & 0xFFFFFFFFFFFFFFFF
             h7 = (h7 + h) & 0xFFFFFFFFFFFFFFFF
-        # 3. Conclusion
         self.hash_pieces = [h0, h1, h2, h3, h4, h5, h6, h7]
 
     def digest(self):
