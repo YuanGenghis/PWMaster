@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QTableView, QWidget, QFileDialog, QHeaderView
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QTableView, QWidget, QFileDialog, QHeaderView, QLineEdit
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import csv
 from password_delegate import PasswordDelegate
 from aes import encrypt_password, decrypt_password, transfer_string_to_length
+from PyQt5.QtCore import Qt
 
 with open('user_log.txt', 'r') as f:
     lines = f.readlines()
@@ -17,8 +18,12 @@ class mainpage(QMainWindow):
 
         self.table_view = QTableView()
 
+        # Set search bar
+        self.search_input = QLineEdit()
+
         layout = QVBoxLayout()
         layout.addWidget(self.table_view)
+        layout.addWidget(self.search_input)
 
         central_widget = QWidget(self)
         central_widget.setLayout(layout)
@@ -31,6 +36,9 @@ class mainpage(QMainWindow):
 
         # Load and display passwords
         self.load_passwords()
+
+        # Set search bar functionality
+        self.search_input.textChanged.connect(self.search_passwords)
 
     def browser_files(self):
         f_name = QFileDialog.getOpenFileName(self, 'Open file', r'./', 'CSV files (*.csv)')
@@ -88,3 +96,21 @@ class mainpage(QMainWindow):
                 passwords.append(row)
 
         return passwords
+    
+    def search_passwords(self):
+        search_text = self.search_input.text().strip().lower()
+
+        model = self.table_view.model()
+        num_rows = model.rowCount()
+
+        for row in range(num_rows):
+            name_index = model.index(row, 0)
+            url_index = model.index(row, 1)
+
+            name = model.data(name_index, Qt.DisplayRole).lower()
+            url = model.data(url_index, Qt.DisplayRole).lower()
+
+            if search_text in name or search_text in url:
+                self.table_view.setRowHidden(row, False)
+            else:
+                self.table_view.setRowHidden(row, True)
