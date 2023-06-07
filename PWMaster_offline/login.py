@@ -70,6 +70,8 @@ class login(QMainWindow):
                         self.showMainPage()
                         return
                 QMessageBox.warning(self, "Login", "Username or password is incorrect.")
+        else:
+            QMessageBox.warning(self, "Login", "No user log found. Please sign up first.")
 
     def showSignupSection(self):
         self.stacked_widget.setCurrentWidget(self.signup_page)

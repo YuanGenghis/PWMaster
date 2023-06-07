@@ -4,11 +4,15 @@ import csv
 from password_delegate import PasswordDelegate
 from aes import encrypt_password, decrypt_password, transfer_string_to_length
 from PyQt5.QtCore import Qt
+import os
 
-with open('user_log.txt', 'r') as f:
-    lines = f.readlines()
-    password_line = lines[1].strip()
-    user_password = password_line.split(",")[1].strip()
+if os.path.isfile('./user_log.txt'):
+    with open('user_log.txt', "r") as file:
+        lines = file.readlines()
+        password_line = lines[1].strip() 
+        user_password = password_line.split(",")[1].strip()
+else:
+    user_password = "123456"
 
 aes_key = transfer_string_to_length(user_password, 16)
 
@@ -89,11 +93,12 @@ class mainpage(QMainWindow):
     def read_passwords_from_csv(self, file_path):
         passwords = []
 
-        with open(file_path, "r", newline="") as file:
-            reader = csv.reader(file)
-            next(reader)  # Skip the header row
-            for row in reader:
-                passwords.append(row)
+        if os.path.isfile(file_path):
+            with open(file_path, "r", newline="") as file:
+                reader = csv.reader(file)
+                next(reader)  # Skip the header row
+                for row in reader:
+                    passwords.append(row)
 
         return passwords
     

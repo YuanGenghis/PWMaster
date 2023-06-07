@@ -2,13 +2,17 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
 from Cryptodome.Protocol.KDF import scrypt
 from Cryptodome.Util.Padding import pad, unpad
+import os
 
 salt = get_random_bytes(16)
 
-with open('user_log.txt', "r") as file:
-    lines = file.readlines()
-    password_line = lines[1].strip() 
-    password = password_line.split(",")[1].strip()
+if os.path.isfile('./user_log.txt'):
+    with open('user_log.txt', "r") as file:
+        lines = file.readlines()
+        password_line = lines[1].strip() 
+        password = password_line.split(",")[1].strip()
+else:
+    password = "123456"
 
 key = scrypt(password, salt, key_len=32, N=2**14, r=8, p=1)
 
