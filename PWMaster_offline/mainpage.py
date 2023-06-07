@@ -1,10 +1,11 @@
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QTableView, QWidget, QFileDialog, QHeaderView, QLineEdit
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QTableView, QWidget, QFileDialog, QHeaderView, QLineEdit, QPushButton, QDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import csv
 from password_delegate import PasswordDelegate
 from aes import encrypt_password, decrypt_password, transfer_string_to_length
 from PyQt5.QtCore import Qt
 import os
+from add_password import AddPassword
 
 if os.path.isfile('./user_log.txt'):
     with open('user_log.txt', "r") as file:
@@ -25,9 +26,13 @@ class mainpage(QMainWindow):
         # Set search bar
         self.search_input = QLineEdit()
 
+        # Set up table view
+        self.add_password_button = QPushButton("Add Password")
+
         layout = QVBoxLayout()
-        layout.addWidget(self.table_view)
+        layout.addWidget(self.add_password_button)
         layout.addWidget(self.search_input)
+        layout.addWidget(self.table_view)
 
         central_widget = QWidget(self)
         central_widget.setLayout(layout)
@@ -43,6 +48,8 @@ class mainpage(QMainWindow):
 
         # Set search bar functionality
         self.search_input.textChanged.connect(self.search_passwords)
+
+        self.add_password_button.clicked.connect(self.add_password)
 
     def browser_files(self):
         f_name = QFileDialog.getOpenFileName(self, 'Open file', r'./', 'CSV files (*.csv)')
@@ -119,3 +126,23 @@ class mainpage(QMainWindow):
                 self.table_view.setRowHidden(row, False)
             else:
                 self.table_view.setRowHidden(row, True)
+
+    def add_password(self):
+        dialog = AddPassword(self)
+        if dialog.exec_() == QDialog.Accepted:
+            name, url, username, password, note = dialog.get_password_details()
+
+            password = encrypt_password(password, aes_key)
+            self.save_password_to_csv(name, url, username, password, note)
+            self.load_passwords()
+
+    def save_password_to_csv(self, name, url, username, password, note):
+        if not os.path.isfile("passwords.csv"):
+            with open("passwords.csv", "a", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["Name", "URL", "Username", "Password", "Note"])
+                writer.writerow([name, url, username, password, note])
+        else:
+            with open("passwords.csv", "a", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow([name, url, username, password, note])
