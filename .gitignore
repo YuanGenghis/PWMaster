@@ -5,3 +5,7 @@
 #ignore passwords.csv and user_log.txt
 passwords.csv
 user_log.txt
+
+
+/build/
+/dist/
