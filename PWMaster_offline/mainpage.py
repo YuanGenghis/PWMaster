@@ -109,7 +109,7 @@ class mainpage(QMainWindow):
         header.setSectionResizeMode(QHeaderView.Stretch)
 
         # Set the delegate for the password column
-        self.table_view.setItemDelegateForColumn(5, PasswordDelegate(self))
+        self.table_view.setItemDelegateForColumn(4, PasswordDelegate(self))
 
         self.table_view.resizeColumnsToContents()
 

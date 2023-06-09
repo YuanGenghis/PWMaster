@@ -15,7 +15,7 @@ def check_user_exist():
 def edit_password(self, index):
     # Get the row data from the model
     model = self.table_view.model()
-    row_data = [model.index(index, column).data() for column in range(1, model.columnCount())]
+    row_data = [model.index(index - 1, column).data() for column in range(1, model.columnCount())]
 
     # Create the edit dialog and populate it with the row data
     dialog = EditPasswordDialog(*row_data)
