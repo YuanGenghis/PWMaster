@@ -162,8 +162,8 @@ class mainpage(QMainWindow):
         num_rows = model.rowCount()
 
         for row in range(num_rows):
-            name_index = model.index(row, 0)
-            url_index = model.index(row, 1)
+            name_index = model.index(row, 1)
+            url_index = model.index(row, 2)
 
             name = model.data(name_index, Qt.DisplayRole).lower()
             url = model.data(url_index, Qt.DisplayRole).lower()
