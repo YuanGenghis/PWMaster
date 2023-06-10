@@ -44,10 +44,6 @@ def delete_password(self, index):
         remove_password_from_csv(index)
 
 def update_password_in_csv(row, name, url, username, password, note):
-    with open("passwords.csv", "r") as file:
-        reader = csv.reader(file)
-        rows = list(reader)
-
     if check_user_exist():
         with open('user_log.txt', "r") as file:
             lines = file.readlines()
@@ -55,6 +51,10 @@ def update_password_in_csv(row, name, url, username, password, note):
             user_password = password_line.split(",")[1].strip()
     else:
         user_password = "123456"
+        
+    with open("passwords.csv", "r") as file:
+        reader = csv.reader(file)
+        rows = list(reader)
 
     aes_key = transfer_string_to_length(user_password, 16)
     password = encrypt_password(password, aes_key)

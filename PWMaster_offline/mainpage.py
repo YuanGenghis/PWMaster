@@ -13,16 +13,6 @@ class mainpage(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        if self.check_user_exist():
-            with open('user_log.txt', "r") as file:
-                lines = file.readlines()
-                password_line = lines[1].strip() 
-                user_password = password_line.split(",")[1].strip()
-        else:
-            user_password = "123456"
-
-        self.aes_key = transfer_string_to_length(user_password, 16)
-
         self.table_view = QTableView()
 
         # Set search bar
@@ -67,7 +57,7 @@ class mainpage(QMainWindow):
                     next(reader_object)
 
                     for row in reader_object:
-                        row[3] = encrypt_password(row[3], self.aes_key)
+                        row[3] = encrypt_password(row[3], self.get_aes_key())
                         writer_object.writerow(row)
         else:
             with open('passwords.csv', 'w', newline='') as f:
@@ -79,13 +69,14 @@ class mainpage(QMainWindow):
                     next(reader_object)
 
                     for row in reader_object:
-                        row[3] = encrypt_password(row[3], self.aes_key)
+                        row[3] = encrypt_password(row[3], self.get_aes_key())
                         writer_object.writerow(row)
         self.load_passwords()
 
     def load_passwords(self):
-        self.check_user_exist()
+        aes_key = self.get_aes_key()
         passwords = self.read_passwords_from_csv("passwords.csv")
+        print(aes_key)
 
         # Create the table model and set column headers
         model = QStandardItemModel()
@@ -93,7 +84,7 @@ class mainpage(QMainWindow):
 
         # Populate the table with passwords
         for index, password in enumerate(passwords):
-            password[3] = decrypt_password(eval(password[3]), self.aes_key)
+            password[3] = decrypt_password(eval(password[3]), aes_key)
             row = [None, None, None, None, None, None]
             for col, field in enumerate(password):
                 item = QStandardItem(field)
@@ -187,7 +178,7 @@ class mainpage(QMainWindow):
         if dialog.exec_() == QDialog.Accepted:
             name, url, username, password, note = dialog.get_password_details()
 
-            password = encrypt_password(password, self.aes_key)
+            password = encrypt_password(password, self.get_aes_key())
             self.save_password_to_csv(name, url, username, password, note)
             self.load_passwords()
 
@@ -211,3 +202,13 @@ class mainpage(QMainWindow):
             return False
         else:
             return True
+
+    def get_aes_key(self):
+        if self.check_user_exist():
+            with open('user_log.txt', "r") as file:
+                lines = file.readlines()
+                password_line = lines[1].strip() 
+                return transfer_string_to_length(password_line.split(",")[1].strip(), 16)
+        else:
+            print("aes key not found")
+            self.close()
