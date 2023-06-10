@@ -7,6 +7,6 @@
 2. Expandability -- Easiley import passwords from Chrome by importing the csv file which can be downloaded from Chrome setting
 
 # Use
-1. Download the latest release (V0.2.1) <br>
+1. Download the latest release (V0.3.3) <br>
 2. Unzip to local directory <br>
 3. Double-click on PWMaster.exe file
